@@ -429,9 +429,6 @@ static Napi::Value PtyConnect(const Napi::CallbackInfo& info) {
   // Update handle
   handle->hShell = piClient.hProcess;
 
-  // Close the thread handle to avoid resource leak
-  CloseHandle(piClient.hThread);
-
   SetupExitCallback(env, exitCallback, handle);
 
   // Return
@@ -464,9 +461,7 @@ static Napi::Value PtyResize(const Napi::CallbackInfo& info) {
     bool fLoadedDll = hLibrary != nullptr;
     if (fLoadedDll)
     {
-      PFNRESIZEPSEUDOCONSOLE const pfnResizePseudoConsole = (PFNRESIZEPSEUDOCONSOLE)GetProcAddress(
-        (HMODULE)hLibrary,
-        useConptyDll ? "ConptyResizePseudoConsole" : "ResizePseudoConsole");
+      PFNRESIZEPSEUDOCONSOLE const pfnResizePseudoConsole = (PFNRESIZEPSEUDOCONSOLE)GetProcAddress((HMODULE)hLibrary, "ConptyResizePseudoConsole");
       if (pfnResizePseudoConsole)
       {
         COORD size = {cols, rows};
@@ -482,36 +477,27 @@ static Napi::Value PtyClear(const Napi::CallbackInfo& info) {
   Napi::Env env(info.Env());
   Napi::HandleScope scope(env);
 
-  if (info.Length() != 2 ||
-      !info[0].IsNumber() ||
-      !info[1].IsBoolean()) {
-    throw Napi::Error::New(env, "Usage: pty.clear(id, useConptyDll)");
+  if (info.Length() != 1 ||
+      !info[0].IsNumber()) {
+    throw Napi::Error::New(env, "Usage: pty.clear(id)");
   }
 
-  int id = info[0].As<Napi::Number>().Int32Value();
-  const bool useConptyDll = info[1].As<Napi::Boolean>().Value();
+  // int id = info[0].As<Napi::Number>().Int32Value();
 
-  // This API is only supported for conpty.dll as it was introduced in a later version of Windows.
-  // We could hook it up to point at >= a version of Windows only, but the future is conpty.dll
-  // anyway.
-  if (!useConptyDll) {
-    return env.Undefined();
-  }
+  // const pty_baton* handle = get_pty_baton(id);
 
-  const pty_baton* handle = get_pty_baton(id);
-
-  if (handle != nullptr) {
-    HANDLE hLibrary = LoadConptyDll(info, useConptyDll);
-    bool fLoadedDll = hLibrary != nullptr;
-    if (fLoadedDll)
-    {
-      PFNCLEARPSEUDOCONSOLE const pfnClearPseudoConsole = (PFNCLEARPSEUDOCONSOLE)GetProcAddress((HMODULE)hLibrary, "ConptyClearPseudoConsole");
-      if (pfnClearPseudoConsole)
-      {
-        pfnClearPseudoConsole(handle->hpc);
-      }
-    }
-  }
+  // if (handle != nullptr) {
+  //   HANDLE hLibrary = LoadLibraryExW(L"kernel32.dll", 0, 0);
+  //   bool fLoadedDll = hLibrary != nullptr;
+  //   if (fLoadedDll)
+  //   {
+  //     PFNCLEARPSEUDOCONSOLE const pfnClearPseudoConsole = (PFNCLEARPSEUDOCONSOLE)GetProcAddress((HMODULE)hLibrary, "ClearPseudoConsole");
+  //     if (pfnClearPseudoConsole)
+  //     {
+  //       pfnClearPseudoConsole(handle->hpc);
+  //     }
+  //   }
+  // }
 
   return env.Undefined();
 }
@@ -536,9 +522,7 @@ static Napi::Value PtyKill(const Napi::CallbackInfo& info) {
     bool fLoadedDll = hLibrary != nullptr;
     if (fLoadedDll)
     {
-      PFNCLOSEPSEUDOCONSOLE const pfnClosePseudoConsole = (PFNCLOSEPSEUDOCONSOLE)GetProcAddress(
-        (HMODULE)hLibrary,
-        useConptyDll ? "ConptyClosePseudoConsole" : "ClosePseudoConsole");
+      PFNCLOSEPSEUDOCONSOLE const pfnClosePseudoConsole = (PFNCLOSEPSEUDOCONSOLE)GetProcAddress((HMODULE)hLibrary, "ConptyClosePseudoConsole");
       if (pfnClosePseudoConsole)
       {
         pfnClosePseudoConsole(handle->hpc);

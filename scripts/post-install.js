@@ -1,6 +1,5 @@
 //@ts-check
 
-const { execSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -51,15 +50,7 @@ console.log(`\x1b[32m> Moving conpty.dll...\x1b[0m`);
 if (os.platform() !== 'win32') {
   console.log('  SKIPPED (not Windows)');
 } else {
-  let windowsArch;
-  if (process.env.npm_config_arch) {
-    windowsArch = process.env.npm_config_arch;
-    console.log(`  Using $npm_config_arch: ${windowsArch}`);
-  } else {
-    windowsArch = os.arch();
-    console.log(`  Using os.arch(): ${windowsArch}`);
-  }
-
+  const windowsArch = os.arch();
   if (!CONPTY_SUPPORTED_ARCH.includes(windowsArch)) {
     console.log(`  SKIPPED (unsupported architecture ${windowsArch})`);
   } else {
@@ -76,8 +67,5 @@ if (os.platform() !== 'win32') {
     }
   }
 }
-
-console.log(`\x1b[32m> Generating compile_commands.json...\x1b[0m`);
-execSync('npx node-gyp configure -- -f compile_commands_json');
 
 process.exit(0);

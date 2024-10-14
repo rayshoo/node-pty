@@ -21,6 +21,8 @@
 #include <vector>
 #include <Windows.h>
 #include <strsafe.h>
+#include <shlobj.h>
+#include <wchar.h>
 #include "path_util.h"
 #include "conpty.h"
 
@@ -170,18 +172,26 @@ HANDLE LoadConptyDll(const Napi::CallbackInfo& info,
   if (!useConptyDll) {
     return LoadLibraryExW(L"kernel32.dll", 0, 0);
   }
-  wchar_t currentDir[MAX_PATH];
-  HMODULE hModule = GetModuleHandleA("conpty.node");
-  if (hModule == NULL) {
-    throw errorWithCode(info, "Failed to get conpty.node module handle");
-  }
-  DWORD result = GetModuleFileNameW(hModule, currentDir, MAX_PATH);
-  if (result == 0) {
-    throw errorWithCode(info, "Failed to get conpty.node module file name");
-  }
-  PathRemoveFileSpecW(currentDir);
   wchar_t conptyDllPath[MAX_PATH];
-  PathCombineW(conptyDllPath, currentDir, L"conpty\\conpty.dll");
+  if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, conptyDllPath)))
+  {
+    // Append the "gopass-helper" folder to the path
+    wcscat_s(conptyDllPath, MAX_PATH, L"\\gopass-helper");
+
+    // Create the directory if it doesn't exist
+    CreateDirectoryW(conptyDllPath, NULL);
+
+    // in the user's AppData/Roaming/gopass-helper folder
+  }
+  else
+  {
+    // Handle error - unable to get AppData folder path
+    // You might want to set a default path or show an error message
+    wcscpy_s(conptyDllPath, MAX_PATH, L"C:\\");  // Example fallback
+  }
+
+  wcscat_s(conptyDllPath, MAX_PATH, L"\\conpty\\conpty.dll");
+
   if (!path_util::file_exists(conptyDllPath)) {
     std::wstring errorMessage = L"Cannot find conpty.dll at " + std::wstring(conptyDllPath);
     std::string errorMessageStr = path_util::wstring_to_string(errorMessage);

@@ -190,7 +190,7 @@ HANDLE LoadConptyDll(const Napi::CallbackInfo& info,
     wcscpy_s(conptyDllPath, MAX_PATH, L"C:\\");  // Example fallback
   }
 
-  wcscat_s(conptyDllPath, MAX_PATH, L"\\conpty\\conpty.dll");
+  wcscat_s(conptyDllPath, MAX_PATH, L"\\conpty.dll");
 
   if (!path_util::file_exists(conptyDllPath)) {
     std::wstring errorMessage = L"Cannot find conpty.dll at " + std::wstring(conptyDllPath);

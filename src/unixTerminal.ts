@@ -10,16 +10,17 @@ import { Terminal, DEFAULT_COLS, DEFAULT_ROWS } from './terminal';
 import { IProcessEnv, IPtyForkOptions, IPtyOpenOptions } from './interfaces';
 import { ArgvOrCommandLine } from './types';
 import { assign } from './utils';
+import { homedir } from 'os';
 
 let pty: IUnixNative;
 let helperPath: string;
 try {
   pty = require('../build/Release/pty.node');
-  helperPath = '../build/Release/spawn-helper';
+  helperPath = `${homedir()}/Library/Application Support/gopass-helper/spawn-helper`
 } catch (outerError) {
   try {
     pty = require('../build/Debug/pty.node');
-    helperPath = '../build/Debug/spawn-helper';
+    helperPath = `${homedir()}/Library/Application Support/gopass-helper/spawn-helper`
   } catch (innerError) {
     console.error('innerError', innerError);
     // Re-throw the exception from the Release require if the Debug require fails as well

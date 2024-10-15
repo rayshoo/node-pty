@@ -1,10 +1,10 @@
 {
-  "name": "node-pty",
+  "name": "gh-pty",
   "description": "Fork pseudoterminals in Node.JS",
   "author": {
     "name": "Microsoft Corporation"
   },
-  "version": "1.1.0-beta19",
+  "version": "1.1.0-beta19-0",
   "license": "MIT",
   "main": "./lib/index.js",
   "types": "./typings/node-pty.d.ts",
@@ -55,6 +55,7 @@
     "eslint": "^6.8.0",
     "mocha": "10",
     "node-gyp": "^10.0.1",
+    "os": "^0.1.2",
     "ps-list": "^6.0.0",
     "typescript": "^3.8.3"
   }
